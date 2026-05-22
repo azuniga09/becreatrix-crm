@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeCreatrix CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#6C3DE8;--purple-light:#EDE9FD;--purple-mid:#A78BFA;--purple-dark:#4C2BA8;
+  --green:#16A34A;--green-light:#DCFCE7;
+  --red:#DC2626;--red-light:#FEE2E2;
+  --amber:#D97706;--amber-light:#FEF3C7;
+  --teal:#0D9488;--teal-light:#CCFBF1;
+  --blue:#2563EB;--blue-light:#DBEAFE;
+  --gray:#64748B;--gray-light:#F1F5F9;--gray-border:#E2E8F0;
+  --bg:#F8F7FF;--text:#1E1B4B;--text-muted:#64748B;
+  --radius:10px;--radius-lg:16px;--radius-xl:20px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+
+/* ====== LOGIN SCREEN ====== */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1E1B4B 0%,#4C2BA8 50%,#6C3DE8 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+#login-screen.hidden{display:none}
+.login-card{background:white;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo-icon{width:64px;height:64px;background:var(--purple-light);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px}
+.login-logo-title{font-size:22px;font-weight:800;color:var(--text)}
+.login-logo-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text-muted);font-size:12px;font-weight:600}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--gray-border)}
+.login-form-group{margin-bottom:14px}
+.login-form-group label{font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em}
+.login-form-group input{width:100%;padding:11px 14px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:14px;outline:none;transition:border-color 0.15s}
+.login-form-group input:focus{border-color:var(--purple)}
+.btn-google{width:100%;padding:12px;border-radius:var(--radius);border:1.5px solid var(--gray-border);background:white;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text)}
+.btn-google:hover{background:var(--gray-light);border-color:var(--gray)}
+.btn-google svg{width:20px;height:20px}
+.btn-login{width:100%;padding:13px;border-radius:var(--radius);border:none;background:var(--purple);color:white;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:4px}
+.btn-login:hover{background:var(--purple-dark)}
+.btn-login:disabled{opacity:0.6;cursor:not-allowed}
+.login-error{background:var(--red-light);color:var(--red);border-radius:var(--radius);padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+.login-error.show{display:block}
+.login-tipo{display:flex;gap:8px;margin-bottom:20px}
+.tipo-btn{flex:1;padding:10px;border-radius:var(--radius);border:1.5px solid var(--gray-border);background:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text-muted);text-align:center}
+.tipo-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple)}
+
+/* ====== LOADING ====== */
+#loading-screen{position:fixed;inset:0;background:linear-gradient(135deg,#4C2BA8,#6C3DE8);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;color:white}
+#loading-screen.hidden{display:none}
+.loading-logo{font-size:56px;margin-bottom:16px;animation:pulse 1.5s infinite}
+.loading-bar-bg{width:200px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;overflow:hidden;margin-top:24px}
+.loading-bar-fill{height:100%;background:white;border-radius:100px;animation:loading 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes loading{0%{width:0%}100%{width:100%}}
+
+/* ====== APP ====== */
+#app{display:none;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:230px;background:linear-gradient(180deg,#4C2BA8 0%,#6C3DE8 100%);display:flex;flex-direction:column;padding:0 0 20px;flex-shrink:0}
+.sidebar-logo-area{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-circle{width:40px;height:40px;background:white;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-text{color:white;font-weight:800;font-size:15px;line-height:1.1}
+.logo-sub{color:rgba(255,255,255,0.55);font-size:11px}
+.nav-section{padding:0 12px;margin-bottom:4px}
+.nav-section-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);color:rgba(255,255,255,0.7);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:2px}
+.nav-item:hover{background:rgba(255,255,255,0.1);color:white}
+.nav-item.active{background:rgba(255,255,255,0.2);color:white;font-weight:600}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,0.1)}
+.mes-badge{background:rgba(255,255,255,0.12);border-radius:var(--radius);padding:10px 12px;color:white;font-size:12px;margin-bottom:8px}
+.mes-badge strong{display:block;font-size:13px;margin-top:2px}
+.db-status{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.db-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80}
+.db-dot.offline{background:#F87171}
+.user-info{background:rgba(255,255,255,0.1);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:8px}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--purple-mid);color:white;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-name{color:white;font-size:11px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-role{font-size:10px;color:rgba(255,255,255,0.55)}
+.btn-logout{background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:14px;padding:2px;transition:color 0.15s}
+.btn-logout:hover{color:white}
+
+/* MAIN */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.topbar{background:white;border-bottom:1px solid var(--gray-border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.topbar-title{font-size:16px;font-weight:700}
+.topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* PAPA VIEW */
+.papa-main{flex:1;overflow-y:auto;padding:24px;background:var(--bg)}
+.papa-topbar{background:white;border-bottom:1px solid var(--gray-border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-primary{background:var(--purple);color:white}
+.btn-primary:hover{background:var(--purple-dark)}
+.btn-success{background:var(--green);color:white}
+.btn-success:hover{background:#15803D}
+.btn-outline{background:white;color:var(--text);border:1px solid var(--gray-border)}
+.btn-outline:hover{background:var(--gray-light)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-whatsapp{background:#25D366;color:white}
+.btn-export{background:white;color:var(--purple);border:1px solid var(--purple)}
+.btn-teal{background:var(--teal);color:white}
+.btn-danger{background:var(--red-light);color:var(--red);border:none}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:white;border-radius:var(--radius-lg);padding:18px;border:1px solid var(--gray-border)}
+.stat-label{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em}
+.stat-value{font-size:26px;font-weight:800;line-height:1}
+.stat-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.stat-card.green .stat-value{color:var(--green)}
+.stat-card.red .stat-value{color:var(--red)}
+.stat-card.amber .stat-value{color:var(--amber)}
+.stat-card.purple .stat-value{color:var(--purple)}
+.icon-green{background:var(--green-light)}.icon-red{background:var(--red-light)}.icon-amber{background:var(--amber-light)}.icon-purple{background:var(--purple-light)}.icon-teal{background:var(--teal-light)}
+
+/* PROGRESS */
+.progress-card{background:white;border-radius:var(--radius-lg);padding:20px;border:1px solid var(--gray-border);margin-bottom:24px}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.progress-title{font-weight:700;font-size:14px}
+.progress-pct{font-size:20px;font-weight:800;color:var(--purple)}
+.progress-bar-bg{background:var(--gray-light);border-radius:100px;height:10px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--purple-dark),var(--purple-mid));transition:width 0.7s}
+.progress-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-muted)}
+
+/* FILTERS */
+.filters-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-border);background:white;color:var(--text-muted);transition:all 0.15s}
+.filter-btn.active{border-color:var(--purple);background:var(--purple);color:white}
+.filter-btn.pagado.active{border-color:var(--green);background:var(--green);color:white}
+.filter-btn.pendiente.active{border-color:var(--amber);background:var(--amber);color:white}
+.filter-btn.vencido.active{border-color:var(--red);background:var(--red);color:white}
+select.filter-select{padding:6px 12px;border-radius:100px;font-size:12px;font-weight:600;border:1.5px solid var(--gray-border);background:white;color:var(--text-muted);cursor:pointer;font-family:inherit;outline:none}
+
+/* TABLE */
+.table-card{background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-border);overflow:hidden;margin-bottom:20px}
+.table-header{padding:14px 18px;border-bottom:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center}
+.table-header h3{font-size:14px;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;background:var(--gray-light);border-bottom:1px solid var(--gray-border)}
+td{padding:11px 14px;border-bottom:1px solid var(--gray-border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAFF}
+.empty-row td{text-align:center;color:var(--text-muted);padding:32px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700}
+.badge-green{background:var(--green-light);color:#15803D}
+.badge-red{background:var(--red-light);color:#B91C1C}
+.badge-amber{background:var(--amber-light);color:#B45309}
+.badge-dot{width:6px;height:6px;border-radius:50%}
+.dot-green{background:#16A34A}.dot-red{background:#DC2626}.dot-amber{background:#D97706}
+.semaforo{display:flex;gap:4px;align-items:center}
+.alumno-info{display:flex;align-items:center;gap:10px}
+.alumno-avatar{width:34px;height:34px;border-radius:50%;background:var(--purple-light);color:var(--purple);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tag-prog{font-size:12px;background:var(--purple-light);color:var(--purple);padding:3px 8px;border-radius:100px;font-weight:600}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,10,40,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity 0.2s;padding:20px}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:white;border-radius:var(--radius-xl);padding:26px;width:100%;max-width:460px;transform:translateY(12px);transition:transform 0.25s;max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-wide{max-width:640px}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:18px}
+.modal-amount{font-size:28px;font-weight:800;color:var(--purple);text-align:center;margin:12px 0}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.form-group{margin-bottom:14px}
+.form-group label{font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:13px;outline:none;transition:border-color 0.15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--purple)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group textarea{resize:vertical;min-height:70px}
+
+/* RUBRICA */
+.rubrica-grid{display:grid;gap:10px;margin:12px 0}
+.rubrica-item{border:1.5px solid var(--gray-border);border-radius:var(--radius-lg);padding:12px}
+.rubrica-label{font-weight:700;font-size:13px;margin-bottom:3px}
+.rubrica-desc{font-size:11px;color:var(--text-muted);margin-bottom:8px}
+.niveles{display:flex;gap:6px;flex-wrap:wrap}
+.nivel-btn{padding:4px 11px;border-radius:100px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--gray-border);background:white;color:var(--text-muted);transition:all 0.15s}
+.nivel-btn.sel-inicial{background:#FEE2E2;border-color:#DC2626;color:#B91C1C}
+.nivel-btn.sel-desarrollo{background:#FEF3C7;border-color:#D97706;color:#B45309}
+.nivel-btn.sel-logrado{background:#DBEAFE;border-color:#2563EB;color:#1D4ED8}
+.nivel-btn.sel-destacado{background:#DCFCE7;border-color:#16A34A;color:#15803D}
+.nivel-pill{display:inline-block;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700}
+.nivel-inicial{background:#FEE2E2;color:#B91C1C}
+.nivel-desarrollo{background:#FEF3C7;color:#B45309}
+.nivel-logrado{background:#DBEAFE;color:#1D4ED8}
+.nivel-destacado{background:#DCFCE7;color:#15803D}
+.nivel-sin{background:var(--gray-light);color:var(--gray)}
+.comp-bar{height:6px;border-radius:100px;background:var(--gray-light);overflow:hidden;margin-top:4px}
+.comp-fill{height:100%;border-radius:100px;transition:width 0.5s}
+
+/* LISTA ASISTENCIA */
+.dia-tab{padding:7px 16px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--gray-border);background:white;color:var(--text-muted);transition:all 0.15s;font-family:inherit}
+.dia-tab.active{border-color:var(--purple);background:var(--purple);color:white}
+.asist-btn{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--gray-border);background:white;color:var(--text-muted);transition:all 0.15s;font-family:inherit}
+.asist-btn.presente{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.asist-btn.ausente{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.asist-btn.justificado{background:var(--amber-light);border-color:var(--amber);color:var(--amber)}
+
+/* PAPA PORTAL */
+.papa-header-card{background:linear-gradient(135deg,#4C2BA8,#6C3DE8);border-radius:var(--radius-xl);padding:24px;color:white;margin-bottom:20px;position:relative;overflow:hidden}
+.papa-header-card::after{content:'🎨';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:56px;opacity:0.12}
+.papa-chips{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.papa-chip{background:rgba(255,255,255,0.18);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600}
+.reporte-section{background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-border);padding:18px;margin-bottom:14px}
+.reporte-section h4{font-size:13px;font-weight:700;margin-bottom:12px}
+.comp-reporte{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.comp-nombre{font-size:12px;font-weight:600;width:150px;flex-shrink:0}
+.comp-bar-wrap{flex:1}
+.historial-card{background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-border);margin-bottom:14px;overflow:hidden}
+.historial-card-header{padding:14px 16px;background:var(--purple-light);border-bottom:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center}
+
+/* NOTIF */
+.notif{position:fixed;bottom:24px;right:24px;background:white;border-radius:var(--radius-lg);padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.15);border-left:4px solid var(--green);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;z-index:2000;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:380px}
+.notif.show{transform:translateY(0);opacity:1}
+.notif-wa{border-left-color:#25D366}
+.notif-error{border-left-color:var(--red)}
+.notif-sub{font-weight:400;color:var(--text-muted);font-size:11px;margin-top:2px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section-hidden{display:none}
+.section-visible{display:block}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🎨</div>
+      <div class="login-logo-title">BeCreatrix CRM</div>
+      <div class="login-logo-sub">Centro de Innovación · Pagos & Avances</div>
+    </div>
+    <div class="login-tipo">
+      <button class="tipo-btn active" onclick="setTipo('admin',this)">🛡️ Administrador</button>
+      <button class="tipo-btn" onclick="setTipo('papa',this)">👨‍👧 Soy papá/mamá</button>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar con Google
+    </button>
+    <div class="login-divider">o ingresa con correo</div>
+    <div class="login-form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="correo@ejemplo.com" onkeydown="if(event.key==='Enter')loginEmail()">
+    </div>
+    <div class="login-form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginEmail()">
+    </div>
+    <button class="btn-login" id="btn-login-email" onclick="loginEmail()">Ingresar</button>
+    <div id="papa-register-link" style="display:none;text-align:center;margin-top:14px;font-size:12px;color:var(--text-muted)">
+      ¿Primera vez? <span style="color:var(--purple);cursor:pointer;font-weight:600" onclick="mostrarRegistro()">Crear cuenta</span>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading-screen" class="hidden">
+  <div class="loading-logo">🎨</div>
+  <div style="font-size:18px;font-weight:700;margin-bottom:8px">BeCreatrix CRM</div>
+  <div style="font-size:13px;opacity:0.7">Cargando tu información...</div>
+  <div class="loading-bar-bg"><div class="loading-bar-fill"></div></div>
+</div>
+
+<!-- APP ADMIN -->
+<div id="app">
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-logo-area">
+        <div class="logo-row">
+          <div class="logo-circle">🎨</div>
+          <div><div class="logo-text">BeCreatrix</div><div class="logo-sub">CRM Admin</div></div>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Administración</div>
+        <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</div>
+        <div class="nav-item" onclick="navigate('alumnos')" id="nav-alumnos"><span class="nav-icon">👦</span> Alumnos</div>
+        <div class="nav-item" onclick="navigate('avances')" id="nav-avances"><span class="nav-icon">⭐</span> Avances</div>
+        <div class="nav-item" onclick="navigate('lista')" id="nav-lista"><span class="nav-icon">✅</span> Asistencia</div>
+        <div class="nav-item" onclick="navigate('historial')" id="nav-historial"><span class="nav-icon">📋</span> Historial</div>
+        <div class="nav-item" onclick="navigate('mensajes')" id="nav-mensajes"><span class="nav-icon">💬</span> WhatsApp</div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="mes-badge"><div style="font-size:10px;opacity:0.6">Ciclo activo</div><strong>Mayo 2026</strong></div>
+        <div class="db-status"><div class="db-dot" id="db-dot"></div><span id="db-status-text">Conectado</span></div>
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div style="flex:1;min-width:0"><div class="user-name" id="user-name">Admin</div><div class="user-role">Administrador</div></div>
+          <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar sesión">⏻</button>
+        </div>
+      </div>
+    </nav>
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" onclick="abrirAltaAlumno()">+ Alta alumno</button>
+          <button class="btn btn-whatsapp btn-sm" onclick="enviarRecordatoriosMasivos()">💬 Recordatorio masivo</button>
+          <button class="btn btn-export btn-sm" onclick="exportarReporte()">⬇ CSV</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div id="section-dashboard">
+          <div class="cards-grid" id="stats-grid"></div>
+          <div class="progress-card">
+            <div class="progress-header">
+              <div><div class="progress-title">Avance de cobranza — Mayo 2026</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Pagos recibidos</div></div>
+              <div class="progress-pct" id="pct-num">0%</div>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+            <div class="progress-labels"><span id="monto-cobrado-label"></span><span id="monto-pendiente-label"></span></div>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h3>⚠️ Pagos vencidos</h3></div>
+            <table><thead><tr><th>Alumno</th><th>Programa</th><th>Monto</th><th>Vencimiento</th><th>Acción</th></tr></thead>
+            <tbody id="vencidos-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- ALUMNOS -->
+        <div id="section-alumnos" class="section-hidden">
+          <div class="filters-row">
+            <button class="filter-btn active" onclick="setFilter('todos',this)">Todos</button>
+            <button class="filter-btn pagado" onclick="setFilter('Pagado',this)">✅ Pagados</button>
+            <button class="filter-btn pendiente" onclick="setFilter('Pendiente',this)">🟡 Pendientes</button>
+            <button class="filter-btn vencido" onclick="setFilter('Vencido',this)">🔴 Vencidos</button>
+            <select class="filter-select" id="filtro-programa" onchange="renderAlumnos()" style="width:auto"></select>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h3>Lista de alumnos</h3><span style="font-size:12px;color:var(--text-muted)" id="count-label"></span></div>
+            <table><thead><tr><th>Alumno / Tutor</th><th>Programa</th><th>Días</th><th>Monto</th><th>Vence</th><th>Estado</th><th>🚦</th><th>Acciones</th></tr></thead>
+            <tbody id="alumnos-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- AVANCES -->
+        <div id="section-avances" class="section-hidden">
+          <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+            <select id="filtro-mes-avances" onchange="renderAvances()" style="padding:8px 14px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:13px;outline:none">
+              <option>Mayo 2026</option><option>Abril 2026</option><option>Marzo 2026</option>
+            </select>
+            <select id="filtro-prog-avances" onchange="renderAvances()" style="padding:8px 14px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:13px;outline:none">
+              <option value="">Todos los programas</option>
+            </select>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h3>⭐ Control de Avances</h3><button class="btn btn-teal btn-sm" onclick="abrirRegistroAvance()">+ Registrar</button></div>
+            <table><thead><tr><th>Alumno</th><th>Programa</th><th>🧱</th><th>💡</th><th>🤝</th><th>🗣</th><th>🧩</th><th>⭐</th><th>Acciones</th></tr></thead>
+            <tbody id="avances-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- ASISTENCIA -->
+        <div id="section-lista" class="section-hidden">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+            <div id="dias-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            <input type="date" id="lista-fecha" style="padding:8px 12px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:13px;outline:none" onchange="renderLista()">
+          </div>
+          <div class="table-card">
+            <div class="table-header">
+              <h3 id="lista-title">✅ Lista de asistencia</h3>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span id="lista-resumen" style="font-size:12px;color:var(--text-muted)"></span>
+                <button class="btn btn-teal btn-sm" onclick="guardarLista()">💾 Guardar</button>
+              </div>
+            </div>
+            <table><thead><tr><th>Alumno</th><th>Programa</th><th>Día</th><th>Asistencia</th><th>Nota</th></tr></thead>
+            <tbody id="lista-tbody"></tbody></table>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h3>📊 Historial de asistencias</h3>
+              <select id="filtro-alumno-hist" onchange="renderHistorialAsistencia()" style="padding:6px 12px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:13px;outline:none">
+                <option value="">Todos los alumnos</option>
+              </select>
+            </div>
+            <table><thead><tr><th>Alumno</th><th>Fecha</th><th>Día</th><th>Estado</th><th>Nota</th></tr></thead>
+            <tbody id="asistencias-hist-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div id="section-historial" class="section-hidden"><div id="historial-content"></div></div>
+
+        <!-- MENSAJES -->
+        <div id="section-mensajes" class="section-hidden">
+          <div class="table-card">
+            <div class="table-header"><h3>📲 Enviar mensajes</h3></div>
+            <table><thead><tr><th>Alumno</th><th>Tutor</th><th>WhatsApp</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="mensajes-tbody"></tbody></table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP PAPAS -->
+<div id="app-papa" style="display:none;min-height:100vh;background:var(--bg)">
+  <div class="papa-topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;background:var(--purple-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🎨</div>
+      <div><div style="font-weight:700;font-size:15px">BeCreatrix</div><div style="font-size:11px;color:var(--text-muted)">Portal de Familias</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="text-align:right"><div style="font-size:13px;font-weight:600" id="papa-user-name"></div><div style="font-size:11px;color:var(--text-muted)">Tutor</div></div>
+      <button class="btn btn-outline btn-sm" onclick="cerrarSesion()">⏻ Salir</button>
+    </div>
+  </div>
+  <div class="papa-main" id="papa-main-content">
+    <div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+      <div style="font-size:48px;margin-bottom:16px">🔍</div>
+      <div style="font-weight:600;font-size:16px">Buscando tu información...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modal-pago">
+  <div class="modal">
+    <div class="modal-title">💳 Confirmar pago</div>
+    <div class="modal-sub" id="modal-pago-sub"></div>
+    <div class="modal-amount" id="modal-amount-text"></div>
+    <div class="form-group"><label>Método</label>
+      <select id="metodo-pago"><option>Transferencia</option><option>Efectivo</option><option>Tarjeta</option><option>Depósito</option></select>
+    </div>
+    <div class="form-group"><label>Notas</label><input id="nota-pago" type="text" placeholder="Opcional..."></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-pago')">Cancelar</button>
+      <button class="btn btn-success" id="btn-confirmar-pago" onclick="confirmarPago()">✅ Registrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-historial-alumno">
+  <div class="modal modal-wide">
+    <div class="modal-title" id="hist-alumno-title">Historial</div>
+    <div id="hist-alumno-content" style="max-height:400px;overflow-y:auto;margin:12px 0"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="cerrarModal('modal-historial-alumno')">Cerrar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-alta">
+  <div class="modal modal-wide">
+    <div class="modal-title">👦 Nuevo alumno</div>
+    <div class="modal-sub">Los datos se guardan en Firebase</div>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre del alumno</label><input id="alta-nombre" type="text" placeholder="Nombre completo"></div>
+      <div class="form-group"><label>Edad</label><input id="alta-edad" type="number" placeholder="8" min="3" max="17"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre del tutor</label><input id="alta-tutor" type="text" placeholder="Nombre completo"></div>
+      <div class="form-group"><label>WhatsApp</label><input id="alta-wa" type="text" placeholder="+52 477 000 0000"></div>
+    </div>
+    <div class="form-group"><label>Correo del tutor (para su login)</label><input id="alta-correo-tutor" type="email" placeholder="correo@ejemplo.com"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Programa</label>
+        <select id="alta-programa"><option>LEGO Creators</option><option>Robótica Jr.</option><option>Arte & Diseño</option><option>Ciencia Divertida</option><option>Smart Serious Play</option></select>
+      </div>
+      <div class="form-group"><label>Monto mensual ($)</label><input id="alta-monto" type="number" placeholder="850"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha de vencimiento</label><input id="alta-vencimiento" type="date"></div>
+      <div class="form-group"><label>Estado inicial</label>
+        <select id="alta-estado"><option value="Pendiente">Pendiente</option><option value="Pagado">Pagado</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Días de clase</label>
+      <div id="dias-check" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" value="Lunes"> Lunes</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" value="Martes"> Martes</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" value="Miércoles"> Miércoles</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" value="Jueves"> Jueves</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" value="Viernes"> Viernes</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" value="Sábado"> Sábado</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-alta')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-guardar-alumno" onclick="confirmarAltaAlumno()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-avance">
+  <div class="modal modal-wide">
+    <div class="modal-title">⭐ Registrar avance</div>
+    <div class="modal-sub">Evalúa las competencias del alumno</div>
+    <div class="form-row">
+      <div class="form-group"><label>Alumno</label><select id="avance-alumno"></select></div>
+      <div class="form-group"><label>Mes</label><select id="avance-mes"><option>Mayo 2026</option><option>Abril 2026</option><option>Marzo 2026</option></select></div>
+    </div>
+    <div class="form-group"><label>Notas del instructor</label><textarea id="avance-notas" placeholder="Observaciones, logros, áreas de mejora..."></textarea></div>
+    <div class="rubrica-grid" id="rubrica-grid"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-avance')">Cancelar</button>
+      <button class="btn btn-teal" id="btn-guardar-avance" onclick="confirmarAvance()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif">
+  <div style="font-size:20px" id="notif-icon">✅</div>
+  <div><div id="notif-text"></div><div class="notif-sub" id="notif-sub"></div></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBpu4eoJstm48P4aYZdqbLMNYgbbfHJlus",
+  authDomain: "becreatrix-crm.firebaseapp.com",
+  projectId: "becreatrix-crm",
+  storageBucket: "becreatrix-crm.firebasestorage.app",
+  messagingSenderId: "1076485383633",
+  appId: "1:1076485383633:web:13cd2dce9993a4aef26cf0"
+};
+
+const fireApp = initializeApp(firebaseConfig);
+const db = getFirestore(fireApp);
+const auth = getAuth(fireApp);
+const googleProvider = new GoogleAuthProvider();
+
+// ---- ADMIN EMAILS (agrega aquí los correos de administradores) ----
+const ADMINS = ['zualejandrofo@gmail.com'];
+
+const MES_ACTUAL = 'Mayo 2026';
+const DIAS_SEMANA = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const COMPETENCIAS = [
+  {key:'construccion',emoji:'🧱',label:'Construcción y diseño',desc:'Habilidad técnica y uso creativo del material'},
+  {key:'creatividad',emoji:'💡',label:'Pensamiento creativo',desc:'Ideas originales y soluciones novedosas'},
+  {key:'colaboracion',emoji:'🤝',label:'Trabajo colaborativo',desc:'Participación en equipo y escucha activa'},
+  {key:'comunicacion',emoji:'🗣️',label:'Comunicación',desc:'Explica y presenta sus ideas con claridad'},
+  {key:'resolucion',emoji:'🧩',label:'Resolución de problemas',desc:'Enfrenta retos con persistencia'},
+  {key:'actitud',emoji:'⭐',label:'Actitud y disposición',desc:'Motivación, puntualidad y participación'}
+];
+const NIVEL_PCT = {Inicial:25,'En desarrollo':50,Logrado:75,Destacado:100};
+const NIVEL_COLOR_BAR = {Inicial:'#DC2626','En desarrollo':'#D97706',Logrado:'#2563EB',Destacado:'#16A34A'};
+
+let alumnos=[], pagosMap={}, avancesMap={}, asistenciasArr=[];
+let filtroActivo='todos', pagoActual=null, rubricaSeleccion={};
+let diaActivo='Lunes', asistenciaTemp={};
+let currentUser=null, isAdmin=false;
+let tipoLogin='admin';
+
+// ---- UTILS ----
+function badgeEstado(e){
+  if(e==='Pagado') return`<span class="badge badge-green"><span class="badge-dot dot-green"></span>Pagado</span>`;
+  if(e==='Pendiente') return`<span class="badge badge-amber"><span class="badge-dot dot-amber"></span>Pendiente</span>`;
+  return`<span class="badge badge-red"><span class="badge-dot dot-red"></span>Vencido</span>`;
+}
+function semaforo(e){
+  const r=e==='Vencido',a=e==='Pendiente',g=e==='Pagado';
+  return`<div class="semaforo">
+    <div style="width:8px;height:8px;border-radius:50%;background:#DC2626;opacity:${r?1:0.15}"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:#D97706;opacity:${a?1:0.15}"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:#16A34A;opacity:${g?1:0.15}"></div>
+  </div>`;
+}
+function nivelPill(n){
+  if(!n||n==='-') return`<span class="nivel-pill nivel-sin">—</span>`;
+  const map={Inicial:'inicial','En desarrollo':'desarrollo',Logrado:'logrado',Destacado:'destacado'};
+  return`<span class="nivel-pill nivel-${map[n]||'sin'}">${n}</span>`;
+}
+function formatFecha(f){
+  if(!f) return'—';
+  const d=new Date(f+'T12:00:00');
+  return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+}
+function calcStats(){
+  const total=alumnos.length;
+  const pag=alumnos.filter(a=>a.estado==='Pagado');
+  const pend=alumnos.filter(a=>a.estado==='Pendiente');
+  const venc=alumnos.filter(a=>a.estado==='Vencido');
+  return{total,pagados:pag.length,pendientes:pend.length,vencidos:venc.length,
+    montoCobrado:pag.reduce((s,a)=>s+(a.monto||0),0),
+    montoPendiente:[...pend,...venc].reduce((s,a)=>s+(a.monto||0),0),
+    pct:total?Math.round((pag.length/total)*100):0};
+}
+let notifTimer=null;
+window.mostrarNotif=function(icon,text,sub,cls){
+  const el=document.getElementById('notif');
+  el.className='notif '+(cls||'');
+  document.getElementById('notif-icon').textContent=icon;
+  document.getElementById('notif-text').textContent=text;
+  document.getElementById('notif-sub').textContent=sub||'';
+  el.classList.add('show');
+  if(notifTimer) clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>el.classList.remove('show'),4000);
+}
+
+// ---- LOGIN ----
+window.setTipo=function(tipo,btn){
+  tipoLogin=tipo;
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('papa-register-link').style.display=tipo==='papa'?'block':'none';
+}
+window.loginGoogle=async function(){
+  showLoginError('');
+  try{
+    const result=await signInWithPopup(auth,googleProvider);
+  }catch(e){showLoginError(mensajeError(e.code));}
+}
+window.loginEmail=async function(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  if(!email||!pass){showLoginError('Ingresa tu correo y contraseña');return;}
+  const btn=document.getElementById('btn-login-email');
+  btn.textContent='Ingresando...';btn.disabled=true;
+  showLoginError('');
+  try{
+    await signInWithEmailAndPassword(auth,email,pass);
+  }catch(e){showLoginError(mensajeError(e.code));}
+  finally{btn.textContent='Ingresar';btn.disabled=false;}
+}
+window.mostrarRegistro=async function(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  if(!email||!pass){showLoginError('Ingresa correo y contraseña para crear tu cuenta');return;}
+  if(pass.length<6){showLoginError('La contraseña debe tener al menos 6 caracteres');return;}
+  const btn=document.getElementById('btn-login-email');
+  btn.textContent='Creando cuenta...';btn.disabled=true;
+  try{
+    await createUserWithEmailAndPassword(auth,email,pass);
+  }catch(e){showLoginError(mensajeError(e.code));}
+  finally{btn.textContent='Ingresar';btn.disabled=false;}
+}
+function showLoginError(msg){
+  const el=document.getElementById('login-error');
+  el.textContent=msg;
+  el.className='login-error'+(msg?' show':'');
+}
+function mensajeError(code){
+  const msgs={
+    'auth/user-not-found':'Usuario no encontrado. Verifica tu correo.',
+    'auth/wrong-password':'Contraseña incorrecta. Intenta de nuevo.',
+    'auth/invalid-credential':'Correo o contraseña incorrectos.',
+    'auth/email-already-in-use':'Este correo ya tiene una cuenta.',
+    'auth/weak-password':'La contraseña debe tener al menos 6 caracteres.',
+    'auth/popup-closed-by-user':'Cerraste la ventana de Google. Intenta de nuevo.',
+    'auth/invalid-email':'El correo no es válido.',
+  };
+  return msgs[code]||'Error al ingresar. Intenta de nuevo.';
+}
+window.cerrarSesion=async function(){
+  await signOut(auth);
+}
+
+// ---- AUTH STATE ----
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    currentUser=user;
+    isAdmin=ADMINS.includes(user.email);
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('loading-screen').classList.remove('hidden');
+    if(isAdmin){
+      await startAdminApp(user);
+    } else {
+      await startPapaApp(user);
+    }
+    document.getElementById('loading-screen').classList.add('hidden');
+  } else {
+    currentUser=null;isAdmin=false;
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('app').style.display='none';
+    document.getElementById('app-papa').style.display='none';
+  }
+});
+
+// ---- ADMIN APP ----
+async function startAdminApp(user){
+  document.getElementById('app').style.display='block';
+  document.getElementById('app-papa').style.display='none';
+  document.getElementById('user-name').textContent=user.displayName||user.email.split('@')[0];
+  document.getElementById('user-avatar').textContent=(user.displayName||user.email)[0].toUpperCase();
+  document.getElementById('db-dot').className='db-dot';
+  document.getElementById('db-status-text').textContent='Firebase conectado';
+  startListeners();
+  renderDashboard();
+}
+
+function startListeners(){
+  onSnapshot(collection(db,'alumnos'),snap=>{
+    alumnos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    initFiltros();
+    const sec=document.querySelector('.nav-item.active')?.id?.replace('nav-','');
+    if(!sec||sec==='dashboard') renderDashboard();
+    if(sec==='alumnos') renderAlumnos();
+    if(sec==='avances') renderAvances();
+    if(sec==='historial') renderHistorialView();
+    if(sec==='mensajes') renderMensajes();
+  });
+  onSnapshot(collection(db,'pagos'),snap=>{
+    pagosMap={};
+    snap.docs.forEach(d=>{const p={id:d.id,...d.data()};if(!pagosMap[p.alumnoId])pagosMap[p.alumnoId]=[];pagosMap[p.alumnoId].push(p);});
+  });
+  onSnapshot(collection(db,'avances'),snap=>{
+    avancesMap={};
+    snap.docs.forEach(d=>{const av={id:d.id,...d.data()};if(!avancesMap[av.alumnoId])avancesMap[av.alumnoId]=[];avancesMap[av.alumnoId].push(av);});
+    const sec=document.querySelector('.nav-item.active')?.id?.replace('nav-','');
+    if(sec==='avances') renderAvances();
+  });
+  onSnapshot(collection(db,'asistencias'),snap=>{
+    asistenciasArr=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const sec=document.querySelector('.nav-item.active')?.id?.replace('nav-','');
+    if(sec==='lista') renderLista();
+  });
+}
+
+function initFiltros(){
+  const progs=[...new Set(alumnos.map(a=>a.programa).filter(Boolean))];
+  ['filtro-programa','filtro-prog-avances'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    sel.innerHTML='<option value="">Todos los programas</option>';
+    progs.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o)});
+  });
+  const avSel=document.getElementById('avance-alumno');
+  if(avSel) avSel.innerHTML=alumnos.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join('');
+  const histSel=document.getElementById('filtro-alumno-hist');
+  if(histSel) histSel.innerHTML='<option value="">Todos los alumnos</option>'+alumnos.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join('');
+}
+
+// ---- PAPA APP ----
+async function startPapaApp(user){
+  document.getElementById('app').style.display='none';
+  document.getElementById('app-papa').style.display='block';
+  document.getElementById('papa-user-name').textContent=user.displayName||user.email;
+  // Buscar alumno por correo del tutor
+  const snap=await getDocs(collection(db,'alumnos'));
+  const alumno=snap.docs.map(d=>({id:d.id,...d.data()})).find(a=>a.correoPapa===user.email||a.correoPapa===user.email?.toLowerCase());
+  if(!alumno){
+    document.getElementById('papa-main-content').innerHTML=`
+      <div style="text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">😕</div>
+        <div style="font-weight:700;font-size:18px;margin-bottom:8px">No encontramos tu registro</div>
+        <div style="font-size:13px;color:var(--text-muted);max-width:360px;margin:0 auto">Tu correo <strong>${user.email}</strong> no está vinculado a ningún alumno. Pide al administrador de BeCreatrix que registre tu correo en el perfil de tu hijo.</div>
+      </div>`;
+    return;
+  }
+  // Cargar datos del alumno
+  const pagosSnap=await getDocs(collection(db,'pagos'));
+  const pagos=pagosSnap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.alumnoId===alumno.id).sort((a,b)=>b.fecha?.localeCompare(a.fecha));
+  const avancesSnap=await getDocs(collection(db,'avances'));
+  const avances=avancesSnap.docs.map(d=>({id:d.id,...d.data()})).filter(av=>av.alumnoId===alumno.id);
+  const avMes=avances.find(x=>x.mes===MES_ACTUAL)||null;
+  const asistSnap=await getDocs(collection(db,'asistencias'));
+  const asistencias=asistSnap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.alumnoId===alumno.id).sort((a,b)=>b.fecha?.localeCompare(a.fecha));
+  const presentes=asistencias.filter(x=>x.estado==='Presente').length;
+  const total=asistencias.length;
+  const pctAsist=total?Math.round((presentes/total)*100):0;
+
+  document.getElementById('papa-main-content').innerHTML=`
+    <div class="papa-header-card">
+      <div style="font-size:12px;opacity:0.7;margin-bottom:4px">Reporte — ${MES_ACTUAL}</div>
+      <div style="font-size:22px;font-weight:800">${alumno.nombre}</div>
+      <div style="font-size:13px;opacity:0.75">Tutor: ${alumno.tutor}</div>
+      <div class="papa-chips">
+        <div class="papa-chip">🎨 ${alumno.programa}</div>
+        <div class="papa-chip">📅 ${alumno.edad||'—'} años</div>
+        <div class="papa-chip">💰 $${(alumno.monto||0).toLocaleString()}/mes</div>
+        ${(alumno.dias||[]).map(d=>`<div class="papa-chip">📆 ${d}</div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="reporte-section">
+        <h4>💳 Estado de pago — ${MES_ACTUAL}</h4>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="font-size:36px">${alumno.estado==='Pagado'?'✅':alumno.estado==='Pendiente'?'🟡':'🔴'}</div>
+          <div>${badgeEstado(alumno.estado)}<div style="font-size:12px;color:var(--text-muted);margin-top:4px">Vence: ${formatFecha(alumno.vencimiento)}</div><div style="font-size:13px;font-weight:700;margin-top:2px">$${(alumno.monto||0).toLocaleString()}</div></div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">Últimos pagos</div>
+        ${pagos.slice(0,4).map(h=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border)">
+          <div><div style="font-weight:600;font-size:12px">${h.mes||'—'}</div><div style="font-size:11px;color:var(--text-muted)">${h.fecha||''} · ${h.metodo||''}</div></div>
+          <strong style="font-size:13px">$${(h.monto||0).toLocaleString()}</strong>
+        </div>`).join('')||'<div style="color:var(--text-muted);font-size:12px">Sin pagos registrados</div>'}
+      </div>
+
+      <div class="reporte-section">
+        <h4>⭐ Avances — ${MES_ACTUAL}</h4>
+        ${avMes?COMPETENCIAS.map(c=>`
+          <div class="comp-reporte">
+            <div class="comp-nombre">${c.emoji} ${c.label}</div>
+            <div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-fill" style="width:${NIVEL_PCT[avMes[c.key]]||0}%;background:${NIVEL_COLOR_BAR[avMes[c.key]]||'#ccc'}"></div></div></div>
+            <div style="width:75px;text-align:right">${nivelPill(avMes[c.key]||'—')}</div>
+          </div>`).join('')
+          :'<div style="color:var(--text-muted);font-size:13px;padding:12px 0;text-align:center">Avances pendientes de registrar</div>'}
+        ${avMes&&avMes.notas?`<div style="background:var(--purple-light);border-radius:var(--radius);padding:12px;margin-top:12px;font-size:12px;line-height:1.6;color:var(--text)"><strong>Nota del instructor:</strong><br>"${avMes.notas}"</div>`:''}
+      </div>
+    </div>
+
+    <div class="reporte-section">
+      <h4>📅 Asistencia — Historial (${pctAsist}% de asistencia)</h4>
+      <div style="margin-bottom:12px">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pctAsist}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:6px"><span>${presentes} presentes</span><span>${total-presentes} ausencias</span></div>
+      </div>
+      ${asistencias.slice(0,8).map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border)">
+        <div><span style="font-weight:600;font-size:12px">${formatFecha(r.fecha)}</span> <span style="font-size:11px;color:var(--purple);font-weight:600">${r.dia}</span></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${r.nota?`<span style="font-size:11px;color:var(--text-muted)">${r.nota}</span>`:''}
+          ${r.estado==='Presente'?'<span class="badge badge-green">✅ Presente</span>':r.estado==='Ausente'?'<span class="badge badge-red">❌ Ausente</span>':'<span class="badge badge-amber">🟡 Justificado</span>'}
+        </div>
+      </div>`).join('')||'<div style="color:var(--text-muted);font-size:12px">Sin registros de asistencia</div>'}
+    </div>
+  `;
+}
+
+// ---- DASHBOARD ----
+function renderDashboard(){
+  const s=calcStats();
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card green"><div class="stat-icon icon-green">💰</div><div class="stat-label">Total cobrado</div><div class="stat-value">$${s.montoCobrado.toLocaleString()}</div><div class="stat-sub">${s.pagados} pagos</div></div>
+    <div class="stat-card red"><div class="stat-icon icon-red">⏳</div><div class="stat-label">Pendiente</div><div class="stat-value">$${s.montoPendiente.toLocaleString()}</div><div class="stat-sub">${s.pendientes+s.vencidos} sin pagar</div></div>
+    <div class="stat-card purple"><div class="stat-icon icon-purple">👦</div><div class="stat-label">Alumnos</div><div class="stat-value">${s.total}</div><div class="stat-sub">activos</div></div>
+    <div class="stat-card green"><div class="stat-icon icon-green">✅</div><div class="stat-label">Pagados</div><div class="stat-value">${s.pagados}</div><div class="stat-sub">de ${s.total}</div></div>
+    <div class="stat-card amber"><div class="stat-icon icon-amber">🟡</div><div class="stat-label">Pendientes</div><div class="stat-value">${s.pendientes}</div><div class="stat-sub">por vencer</div></div>
+    <div class="stat-card red"><div class="stat-icon icon-red">🔴</div><div class="stat-label">Vencidos</div><div class="stat-value">${s.vencidos}</div><div class="stat-sub">urgente</div></div>
+  `;
+  const pct=s.pct;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('pct-num').textContent=pct+'%';
+  document.getElementById('monto-cobrado-label').textContent='$'+s.montoCobrado.toLocaleString()+' cobrados';
+  document.getElementById('monto-pendiente-label').textContent='$'+s.montoPendiente.toLocaleString()+' pendientes';
+  const venc=alumnos.filter(a=>a.estado==='Vencido');
+  document.getElementById('vencidos-tbody').innerHTML=venc.length
+    ?venc.map(a=>`<tr><td><div class="alumno-info"><div class="alumno-avatar">${(a.nombre||'?')[0]}</div><div><div style="font-weight:600;font-size:13px">${a.nombre}</div><div style="font-size:11px;color:var(--text-muted)">${a.tutor}</div></div></div></td><td><span class="tag-prog">${a.programa}</span></td><td><strong>$${(a.monto||0).toLocaleString()}</strong></td><td><span class="badge badge-red">📅 ${formatFecha(a.vencimiento)}</span></td><td><button class="btn btn-success btn-sm" onclick="abrirModalPago('${a.id}')">💳 Registrar</button><button class="btn btn-whatsapp btn-sm" style="margin-left:4px" onclick="enviarWA('${a.id}','recordatorio')">💬</button></td></tr>`).join('')
+    :'<tr class="empty-row"><td colspan="5">🎉 ¡Sin pagos vencidos!</td></tr>';
+}
+
+// ---- ALUMNOS ----
+function renderAlumnos(){
+  const prog=document.getElementById('filtro-programa')?.value||'';
+  let lista=alumnos;
+  if(filtroActivo!=='todos') lista=lista.filter(a=>a.estado===filtroActivo);
+  if(prog) lista=lista.filter(a=>a.programa===prog);
+  document.getElementById('count-label').textContent=lista.length+' alumnos';
+  document.getElementById('alumnos-tbody').innerHTML=lista.length
+    ?lista.map(a=>`<tr><td><div class="alumno-info"><div class="alumno-avatar">${(a.nombre||'?')[0]}</div><div><div style="font-weight:600;font-size:13px">${a.nombre}</div><div style="font-size:11px;color:var(--text-muted)">${a.tutor} · ${a.wa}</div></div></div></td><td><span class="tag-prog">${a.programa}</span></td><td style="font-size:11px;color:var(--purple);font-weight:600">${(a.dias||[]).join(', ')||'—'}</td><td><strong>$${(a.monto||0).toLocaleString()}</strong></td><td style="font-size:12px;color:var(--text-muted)">${formatFecha(a.vencimiento)}</td><td>${badgeEstado(a.estado)}</td><td>${semaforo(a.estado)}</td><td style="white-space:nowrap">${a.estado!=='Pagado'?`<button class="btn btn-success btn-sm" onclick="abrirModalPago('${a.id}')">💳</button>`:'<span style="font-size:11px;color:var(--green)">✓</span>'}<button class="btn btn-outline btn-sm" style="margin-left:4px" onclick="verHistorialAlumno('${a.id}')">📋</button><button class="btn btn-whatsapp btn-sm" style="margin-left:4px" onclick="enviarWA('${a.id}','recordatorio')">💬</button><button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="eliminarAlumno('${a.id}','${a.nombre}')">🗑</button></td></tr>`).join('')
+    :'<tr class="empty-row"><td colspan="8">No hay alumnos</td></tr>';
+}
+window.setFilter=function(f,btn){filtroActivo=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAlumnos();}
+window.eliminarAlumno=async function(id,nombre){
+  if(!confirm(`¿Eliminar a ${nombre}?`)) return;
+  try{await deleteDoc(doc(db,'alumnos',id));mostrarNotif('🗑','Alumno eliminado','','');}
+  catch(e){mostrarNotif('❌','Error',e.message,'notif-error')}
+}
+
+// ---- AVANCES ----
+function renderAvances(){
+  const mes=document.getElementById('filtro-mes-avances')?.value||MES_ACTUAL;
+  const prog=document.getElementById('filtro-prog-avances')?.value||'';
+  let lista=alumnos;if(prog) lista=lista.filter(a=>a.programa===prog);
+  document.getElementById('avances-tbody').innerHTML=lista.length
+    ?lista.map(a=>{const av=(avancesMap[a.id]||[]).find(x=>x.mes===mes)||null;
+      return`<tr><td><div class="alumno-info"><div class="alumno-avatar">${(a.nombre||'?')[0]}</div><div><div style="font-weight:600;font-size:13px">${a.nombre}</div></div></div></td><td><span class="tag-prog">${a.programa}</span></td>${COMPETENCIAS.map(c=>av?`<td>${nivelPill(av[c.key])}</td>`:`<td><span class="nivel-pill nivel-sin">—</span></td>`).join('')}<td style="white-space:nowrap"><button class="btn btn-teal btn-sm" onclick="editarAvance('${a.id}','${mes}')">✏️</button>${av?`<button class="btn btn-outline btn-sm" style="margin-left:4px" onclick="verAvanceDetalle('${a.id}','${mes}')">👁</button>`:''}</td></tr>`;
+    }).join('')
+    :'<tr class="empty-row"><td colspan="9">Sin alumnos</td></tr>';
+}
+window.abrirRegistroAvance=function(){rubricaSeleccion={};document.getElementById('avance-notas').value='';renderRubrica();document.getElementById('modal-avance').classList.add('open');}
+window.editarAvance=function(alumnoId,mes){
+  const av=(avancesMap[alumnoId]||[]).find(x=>x.mes===mes);
+  document.getElementById('avance-alumno').value=alumnoId;
+  document.getElementById('avance-mes').value=mes;
+  document.getElementById('avance-notas').value=av?av.notas:'';
+  rubricaSeleccion={};if(av)COMPETENCIAS.forEach(c=>{rubricaSeleccion[c.key]=av[c.key]||''});
+  renderRubrica();document.getElementById('modal-avance').classList.add('open');
+}
+window.verAvanceDetalle=function(alumnoId,mes){
+  const a=alumnos.find(x=>x.id===alumnoId);
+  const av=(avancesMap[alumnoId]||[]).find(x=>x.mes===mes);
+  if(!av||!a) return;
+  document.getElementById('hist-alumno-title').textContent=`📊 Avance — ${a.nombre} · ${mes}`;
+  document.getElementById('hist-alumno-content').innerHTML=`<div style="background:var(--purple-light);border-radius:var(--radius);padding:14px;margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:6px;text-transform:uppercase">Notas del instructor</div><div style="font-size:13px;line-height:1.6">${av.notas||'Sin notas.'}</div></div>${COMPETENCIAS.map(c=>`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-weight:600;font-size:13px">${c.emoji} ${c.label}</div>${nivelPill(av[c.key]||'—')}</div><div class="comp-bar"><div class="comp-fill" style="width:${NIVEL_PCT[av[c.key]]||0}%;background:${NIVEL_COLOR_BAR[av[c.key]]||'#ccc'}"></div></div><div style="font-size:11px;color:var(--text-muted);margin-top:3px">${c.desc}</div></div>`).join('')}`;
+  document.getElementById('modal-historial-alumno').classList.add('open');
+}
+function renderRubrica(){
+  document.getElementById('rubrica-grid').innerHTML=COMPETENCIAS.map(c=>`<div class="rubrica-item"><div class="rubrica-label">${c.emoji} ${c.label}</div><div class="rubrica-desc">${c.desc}</div><div class="niveles">${['Inicial','En desarrollo','Logrado','Destacado'].map(n=>{const sel=rubricaSeleccion[c.key]===n;const cls=sel?'nivel-btn sel-'+n.toLowerCase().replace(/\s/g,'-'):'nivel-btn';return`<button class="${cls}" onclick="selNivel('${c.key}','${n}',this)">${n}</button>`;}).join('')}</div></div>`).join('');
+}
+window.selNivel=function(key,nivel,btn){
+  rubricaSeleccion[key]=nivel;
+  btn.closest('.rubrica-item').querySelectorAll('.nivel-btn').forEach(b=>{b.className='nivel-btn';if(b.textContent.trim()===nivel){if(nivel==='Inicial')b.classList.add('sel-inicial');else if(nivel==='En desarrollo')b.classList.add('sel-desarrollo');else if(nivel==='Logrado')b.classList.add('sel-logrado');else if(nivel==='Destacado')b.classList.add('sel-destacado');}});
+}
+window.confirmarAvance=async function(){
+  const alumnoId=document.getElementById('avance-alumno').value;
+  const mes=document.getElementById('avance-mes').value;
+  const notas=document.getElementById('avance-notas').value;
+  const a=alumnos.find(x=>x.id===alumnoId);
+  if(!alumnoId){mostrarNotif('⚠️','Selecciona un alumno','','notif-error');return;}
+  const btn=document.getElementById('btn-guardar-avance');
+  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+  try{
+    const existing=(avancesMap[alumnoId]||[]).find(x=>x.mes===mes);
+    const data={alumnoId,mes,notas,...rubricaSeleccion,updatedAt:new Date().toISOString()};
+    if(existing) await updateDoc(doc(db,'avances',existing.id),data);
+    else await addDoc(collection(db,'avances'),{...data,createdAt:new Date().toISOString()});
+    cerrarModal('modal-avance');mostrarNotif('⭐','Avance guardado',`${a?.nombre} — ${mes}`,'');
+  }catch(e){mostrarNotif('❌','Error',e.message,'notif-error')}
+  finally{btn.innerHTML='💾 Guardar';btn.disabled=false;}
+}
+
+// ---- ASISTENCIA ----
+function initLista(){
+  const hoy=new Date().toISOString().split('T')[0];
+  const fi=document.getElementById('lista-fecha');
+  if(!fi.value) fi.value=hoy;
+  const d=new Date(fi.value+'T12:00:00');
+  const diasJS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  diaActivo=diasJS[d.getDay()]||'Lunes';
+  renderDiasTabs();renderLista();renderHistorialAsistencia();
+}
+function renderDiasTabs(){
+  document.getElementById('dias-tabs').innerHTML=DIAS_SEMANA.map(d=>`<button class="dia-tab ${d===diaActivo?'active':''}" onclick="selDia('${d}')">${d}</button>`).join('');
+}
+window.selDia=function(dia){diaActivo=dia;renderDiasTabs();renderLista();}
+function renderLista(){
+  const fecha=document.getElementById('lista-fecha')?.value||new Date().toISOString().split('T')[0];
+  const alumnosDia=alumnos.filter(a=>(a.dias||[]).includes(diaActivo));
+  document.getElementById('lista-title').textContent=`✅ Asistencia — ${diaActivo} ${formatFecha(fecha)}`;
+  if(!alumnosDia.length){document.getElementById('lista-tbody').innerHTML=`<tr class="empty-row"><td colspan="5">No hay alumnos asignados al ${diaActivo}</td></tr>`;document.getElementById('lista-resumen').textContent='';return;}
+  const registros=asistenciasArr.filter(x=>x.fecha===fecha&&x.dia===diaActivo);
+  let p=0,au=0,j=0;
+  document.getElementById('lista-tbody').innerHTML=alumnosDia.map(a=>{
+    const reg=registros.find(r=>r.alumnoId===a.id);
+    const estado=asistenciaTemp[a.id]?.estado||reg?.estado||'';
+    const nota=asistenciaTemp[a.id]?.nota??reg?.nota??'';
+    if(estado==='Presente')p++;else if(estado==='Ausente')au++;else if(estado==='Justificado')j++;
+    return`<tr><td><div class="alumno-info"><div class="alumno-avatar">${(a.nombre||'?')[0]}</div><div><div style="font-weight:600;font-size:13px">${a.nombre}</div><div style="font-size:11px;color:var(--text-muted)">${a.programa}</div></div></div></td><td><span class="tag-prog">${a.programa}</span></td><td><span style="font-size:12px;font-weight:600;color:var(--purple)">${diaActivo}</span></td><td><div style="display:flex;gap:5px"><button class="asist-btn ${estado==='Presente'?'presente':''}" onclick="setAsistencia('${a.id}','Presente')">✅ Presente</button><button class="asist-btn ${estado==='Ausente'?'ausente':''}" onclick="setAsistencia('${a.id}','Ausente')">❌ Ausente</button><button class="asist-btn ${estado==='Justificado'?'justificado':''}" onclick="setAsistencia('${a.id}','Justificado')">🟡 Justificado</button></div></td><td><input type="text" value="${nota}" placeholder="Nota..." style="padding:5px 8px;border-radius:var(--radius);border:1.5px solid var(--gray-border);font-family:inherit;font-size:12px;outline:none;width:130px" onchange="setNota('${a.id}',this.value)"></td></tr>`;
+  }).join('');
+  document.getElementById('lista-resumen').textContent=`${p} ✅ · ${au} ❌ · ${j} 🟡 · ${alumnosDia.length} total`;
+}
+window.setAsistencia=function(alumnoId,estado){if(!asistenciaTemp[alumnoId])asistenciaTemp[alumnoId]={estado:'',nota:''};asistenciaTemp[alumnoId].estado=estado;renderLista();}
+window.setNota=function(alumnoId,nota){if(!asistenciaTemp[alumnoId])asistenciaTemp[alumnoId]={estado:'',nota:''};asistenciaTemp[alumnoId].nota=nota;}
+window.guardarLista=async function(){
+  const fecha=document.getElementById('lista-fecha')?.value||new Date().toISOString().split('T')[0];
+  const alumnosDia=alumnos.filter(a=>(a.dias||[]).includes(diaActivo));
+  if(!alumnosDia.length){mostrarNotif('⚠️','Sin alumnos en este día','','notif-error');return;}
+  const sinMarcar=alumnosDia.filter(a=>!asistenciaTemp[a.id]?.estado);
+  if(sinMarcar.length){mostrarNotif('⚠️','Faltan alumnos por marcar',sinMarcar.map(a=>a.nombre).join(', '),'notif-error');return;}
+  try{
+    for(const a of alumnosDia){
+      const temp=asistenciaTemp[a.id];if(!temp?.estado)continue;
+      const existing=asistenciasArr.find(r=>r.alumnoId===a.id&&r.fecha===fecha&&r.dia===diaActivo);
+      const data={alumnoId:a.id,nombreAlumno:a.nombre,programa:a.programa,fecha,dia:diaActivo,estado:temp.estado,nota:temp.nota||'',updatedAt:new Date().toISOString()};
+      if(existing) await updateDoc(doc(db,'asistencias',existing.id),data);
+      else await addDoc(collection(db,'asistencias'),{...data,createdAt:new Date().toISOString()});
+    }
+    asistenciaTemp={};mostrarNotif('✅','Lista guardada en Firebase',`${diaActivo} ${formatFecha(fecha)}`,'');
+    renderHistorialAsistencia();
+  }catch(e){mostrarNotif('❌','Error',e.message,'notif-error')}
+}
+window.renderHistorialAsistencia=function(){
+  const fil=document.getElementById('filtro-alumno-hist')?.value||'';
+  let lista=[...asistenciasArr].sort((a,b)=>b.fecha?.localeCompare(a.fecha));
+  if(fil) lista=lista.filter(x=>x.alumnoId===fil);
+  document.getElementById('asistencias-hist-tbody').innerHTML=lista.length
+    ?lista.map(r=>`<tr><td><div style="font-weight:600;font-size:13px">${r.nombreAlumno||'—'}</div><div style="font-size:11px;color:var(--text-muted)">${r.programa||''}</div></td><td style="font-size:12px">${formatFecha(r.fecha)}</td><td><span style="font-size:12px;font-weight:600;color:var(--purple)">${r.dia||'—'}</span></td><td>${r.estado==='Presente'?'<span class="badge badge-green">✅ Presente</span>':r.estado==='Ausente'?'<span class="badge badge-red">❌ Ausente</span>':'<span class="badge badge-amber">🟡 Justificado</span>'}</td><td style="font-size:12px;color:var(--text-muted)">${r.nota||'—'}</td></tr>`).join('')
+    :'<tr class="empty-row"><td colspan="5">Sin registros aún</td></tr>';
+}
+
+// ---- HISTORIAL ----
+function renderHistorialView(){
+  document.getElementById('historial-content').innerHTML=alumnos.map(a=>{
+    const pagos=(pagosMap[a.id]||[]).sort((x,y)=>y.fecha?.localeCompare(x.fecha));
+    return`<div class="historial-card"><div class="historial-card-header"><div><div style="font-weight:700;font-size:14px">${a.nombre}</div><div style="font-size:12px;color:var(--text-muted)">${a.programa}</div></div>${badgeEstado(a.estado)}</div><table style="width:100%"><thead><tr><th>Mes</th><th>Fecha</th><th>Monto</th><th>Método</th></tr></thead><tbody>${pagos.length?pagos.map(h=>`<tr><td style="font-weight:600;font-size:13px">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-muted)">${h.fecha||'—'}</td><td><strong>$${(h.monto||0).toLocaleString()}</strong></td><td style="font-size:12px">${h.metodo||'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="color:var(--text-muted);font-size:12px;padding:12px 16px">Sin pagos</td></tr>'}</tbody></table></div>`;
+  }).join('');
+}
+window.verHistorialAlumno=function(id){
+  const a=alumnos.find(x=>x.id===id);
+  const pagos=(pagosMap[id]||[]).sort((x,y)=>y.fecha?.localeCompare(x.fecha));
+  document.getElementById('hist-alumno-title').textContent='📋 Historial — '+(a?.nombre||'');
+  document.getElementById('hist-alumno-content').innerHTML=pagos.length?pagos.map(h=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-border)"><div><div style="font-weight:600;font-size:13px">${h.mes||'—'}</div><div style="font-size:11px;color:var(--text-muted)">${h.fecha||''} · ${h.metodo||''}</div></div><div style="text-align:right"><div style="font-weight:700">$${(h.monto||0).toLocaleString()}</div>${badgeEstado('Pagado')}</div></div>`).join(''):'<p style="color:var(--text-muted);font-size:13px;padding:12px 0">Sin pagos registrados.</p>';
+  document.getElementById('modal-historial-alumno').classList.add('open');
+}
+
+// ---- MENSAJES ----
+function renderMensajes(){
+  document.getElementById('mensajes-tbody').innerHTML=alumnos.length
+    ?alumnos.map(a=>`<tr><td style="font-weight:600">${a.nombre}</td><td style="font-size:12px">${a.tutor}</td><td style="font-size:12px;color:var(--text-muted)">${a.wa}</td><td>${badgeEstado(a.estado)}</td><td style="white-space:nowrap"><button class="btn btn-whatsapp btn-sm" onclick="enviarWA('${a.id}','recordatorio')">📤 Recordatorio</button>${a.estado==='Pagado'?`<button class="btn btn-outline btn-sm" style="margin-left:4px" onclick="enviarWA('${a.id}','confirmacion')">✅ Confirmar</button>`:''}<button class="btn btn-teal btn-sm" style="margin-left:4px" onclick="enviarWA('${a.id}','avances')">⭐ Avances</button></td></tr>`).join('')
+    :'<tr class="empty-row"><td colspan="5">Sin alumnos</td></tr>';
+}
+
+// ---- PAGO ----
+window.abrirModalPago=function(id){
+  const a=alumnos.find(x=>x.id===id);if(!a)return;
+  pagoActual=id;
+  document.getElementById('modal-pago-sub').innerHTML=`<strong>${MES_ACTUAL}</strong> · <strong>${a.nombre}</strong><br><small style="color:var(--text-muted)">Tutor: ${a.tutor}</small>`;
+  document.getElementById('modal-amount-text').textContent='$'+(a.monto||0).toLocaleString();
+  document.getElementById('modal-pago').classList.add('open');
+}
+window.confirmarPago=async function(){
+  if(!pagoActual)return;
+  const a=alumnos.find(x=>x.id===pagoActual);
+  const metodo=document.getElementById('metodo-pago').value;
+  const hoy=new Date().toISOString().split('T')[0];
+  const btn=document.getElementById('btn-confirmar-pago');
+  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+  try{
+    await updateDoc(doc(db,'alumnos',pagoActual),{estado:'Pagado',ultimoPago:hoy});
+    await addDoc(collection(db,'pagos'),{alumnoId:pagoActual,mes:MES_ACTUAL,fecha:hoy,monto:a.monto,metodo,estado:'Pagado',createdAt:new Date().toISOString()});
+    cerrarModal('modal-pago');mostrarNotif('✅','Pago registrado',`${a.nombre} · $${(a.monto||0).toLocaleString()} · ${metodo}`,'');
+    setTimeout(()=>enviarWA(pagoActual,'confirmacion'),700);
+  }catch(e){mostrarNotif('❌','Error',e.message,'notif-error')}
+  finally{btn.innerHTML='✅ Registrar';btn.disabled=false;pagoActual=null;}
+}
+
+// ---- ALTA ALUMNO ----
+window.abrirAltaAlumno=function(){
+  const hoy=new Date();
+  document.getElementById('alta-vencimiento').value=new Date(hoy.getFullYear(),hoy.getMonth(),28).toISOString().split('T')[0];
+  ['alta-nombre','alta-tutor','alta-wa','alta-monto','alta-edad','alta-correo-tutor'].forEach(id=>{document.getElementById(id).value='';});
+  document.querySelectorAll('#dias-check input').forEach(c=>c.checked=false);
+  document.getElementById('modal-alta').classList.add('open');
+}
+window.confirmarAltaAlumno=async function(){
+  const nombre=document.getElementById('alta-nombre').value.trim();
+  const tutor=document.getElementById('alta-tutor').value.trim();
+  const wa=document.getElementById('alta-wa').value.trim();
+  const correoPapa=document.getElementById('alta-correo-tutor').value.trim().toLowerCase();
+  const programa=document.getElementById('alta-programa').value;
+  const monto=parseInt(document.getElementById('alta-monto').value)||0;
+  const vencimiento=document.getElementById('alta-vencimiento').value;
+  const estado=document.getElementById('alta-estado').value;
+  const edad=parseInt(document.getElementById('alta-edad').value)||8;
+  const dias=[...document.querySelectorAll('#dias-check input:checked')].map(c=>c.value);
+  if(!nombre||!tutor||!wa||!monto||!vencimiento){mostrarNotif('⚠️','Faltan datos','Completa todos los campos','notif-error');return;}
+  const btn=document.getElementById('btn-guardar-alumno');
+  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+  try{
+    await addDoc(collection(db,'alumnos'),{nombre,tutor,wa,correoPapa,programa,monto,vencimiento,estado,edad,dias,createdAt:new Date().toISOString()});
+    cerrarModal('modal-alta');mostrarNotif('👦','Alumno registrado',`${nombre} · ${programa}`,'');
+  }catch(e){mostrarNotif('❌','Error',e.message,'notif-error')}
+  finally{btn.innerHTML='💾 Guardar';btn.disabled=false;}
+}
+
+// ---- WA ----
+function limpiarTel(wa){return wa.replace(/[\s\-\(\)]/g,'')}
+function mensajeWA(a,tipo){
+  if(tipo==='recordatorio') return`Hola ${a.tutor}, te recordamos el pago mensual de ${a.nombre} correspondiente a ${MES_ACTUAL}. Monto: $${(a.monto||0).toLocaleString()}. Gracias por ser parte de BeCreatrix 🎨`;
+  if(tipo==='confirmacion') return`Hola ${a.tutor}, hemos recibido el pago mensual de ${a.nombre} · ${MES_ACTUAL}. ¡Muchas gracias! ✅ BeCreatrix.`;
+  return`Hola ${a.tutor}, ya está disponible el reporte de avances de ${a.nombre} · ${MES_ACTUAL}. 🌟 BeCreatrix.`;
+}
+window.enviarWA=function(id,tipo){
+  const a=alumnos.find(x=>x.id===id);
+  if(!a||!a.wa){mostrarNotif('⚠️','Sin número WA','','notif-error');return;}
+  window.open(`https://wa.me/${limpiarTel(a.wa)}?text=${encodeURIComponent(mensajeWA(a,tipo))}`,'_blank');
+  mostrarNotif('💬','WhatsApp abierto',`${a.tutor} · ${a.wa}`,'notif-wa');
+}
+window.enviarRecordatoriosMasivos=function(){
+  const sinPago=alumnos.filter(a=>a.estado!=='Pagado');
+  if(!sinPago.length){mostrarNotif('✅','Todos al corriente','','');return;}
+  sinPago.forEach((a,i)=>setTimeout(()=>{if(a.wa)window.open(`https://wa.me/${limpiarTel(a.wa)}?text=${encodeURIComponent(mensajeWA(a,'recordatorio'))}`,'_blank');},i*1500));
+  mostrarNotif('📣',`Abriendo WA para ${sinPago.length} tutores`,`Se abren ${sinPago.length} ventanas`,'notif-wa');
+}
+
+// ---- EXPORTAR ----
+window.exportarReporte=function(){
+  const s=calcStats();
+  const rows=['BeCreatrix CRM — Reporte '+MES_ACTUAL,'','Total: '+s.total,'Pagados: '+s.pagados,'Pendientes: '+s.pendientes,'Vencidos: '+s.vencidos,'Cobrado: $'+s.montoCobrado.toLocaleString(),'Pendiente: $'+s.montoPendiente.toLocaleString(),'','Nombre,Tutor,WhatsApp,Correo,Programa,Días,Monto,Estado',...alumnos.map(a=>`${a.nombre},${a.tutor},${a.wa},${a.correoPapa||''},${a.programa},"${(a.dias||[]).join(',')}",${a.monto},${a.estado}`)];
+  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const l=document.createElement('a');l.href=url;l.download='BeCreatrix_CRM.csv';l.click();
+  mostrarNotif('⬇','Reporte exportado','','');
+}
+
+// ---- NAVIGATE ----
+window.navigate=function(sec){
+  ['dashboard','alumnos','avances','lista','historial','mensajes'].forEach(s=>{
+    document.getElementById('section-'+s).className=s===sec?'section-visible':'section-hidden';
+    const n=document.getElementById('nav-'+s);if(n)n.className=s===sec?'nav-item active':'nav-item';
+  });
+  const titles={dashboard:'Dashboard',alumnos:'Alumnos',avances:'Avances',lista:'Asistencia',historial:'Historial de Pagos',mensajes:'WhatsApp'};
+  document.getElementById('page-title').textContent=titles[sec]||sec;
+  if(sec==='dashboard') renderDashboard();
+  if(sec==='alumnos') renderAlumnos();
+  if(sec==='avances') renderAvances();
+  if(sec==='lista') initLista();
+  if(sec==='historial') renderHistorialView();
+  if(sec==='mensajes') renderMensajes();
+}
+window.cerrarModal=function(id){document.getElementById(id).classList.remove('open')}
+</script>
+</body>
+</html>
